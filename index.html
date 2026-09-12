@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marsupilami - RUN MARSUUOO!</title>
+  <meta name="description" content="Marsupilami - Okey, let's go..! RUN MARSUUOO!">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #ffffff;
+    }
+
+    /* Fullscreen Stage */
+    .frontpage-stage {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+      padding: 8px;
+    }
+
+    /* Artwork Container - Perfectly sized to keep 100% of image visible */
+    .frontpage-container {
+      position: relative;
+      width: min(98vw, calc(98vh * (1024 / 731)));
+      height: min(98vh, calc(98vw * (731 / 1024)));
+      aspect-ratio: 1024 / 731;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+    }
+
+    /* The User's Full Artwork with RUN MARSUUOO! */
+    .frontpage-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      pointer-events: none;
+    }
+
+    /* Interactive "Okey, let's go..!" Hotspot Button (Speech Bubble) */
+    .lets-go-btn {
+      position: absolute;
+      /* Exact position of the yellow "Okey, let's go..!" bubble */
+      left: 50.1%;
+      top: 19.4%;
+      width: 41.5%;
+      height: 13.6%;
+      border-radius: 999px;
+      cursor: pointer;
+      z-index: 20;
+      background: transparent;
+      border: none;
+      outline: none;
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* Subtle hover indicator on the speech bubble */
+    .lets-go-btn:hover {
+      transform: scale(1.05);
+      background: rgba(244, 208, 63, 0.15);
+      box-shadow: 0 0 25px rgba(244, 208, 63, 0.5);
+    }
+
+    .lets-go-btn:active, .lets-go-btn.pressed {
+      transform: scale(0.95);
+      background: rgba(244, 208, 63, 0.3);
+    }
+
+    /* Page Exit Zoom Animation */
+    .page-exit {
+      animation: zoomOut 0.35s ease-in forwards;
+    }
+
+    @keyframes zoomOut {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(1.06); opacity: 0; filter: blur(6px); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Full-screen Stage containing only the artwork -->
+  <div class="frontpage-stage" id="frontStage">
+    <div class="frontpage-container" id="frontContainer">
+      <!-- Fresh un-cached original artwork showing the full image including RUN MARSUUOO! -->
+      <img src="assets/runmarsu_cover.jpg?v=2026" alt="Marsupilami - RUN MARSUUOO!" class="frontpage-img">
+
+      <!-- Interactive Clickable Hotspot over the "Okey, let's go..!" Bubble -->
+      <button class="lets-go-btn" id="btnLetsGo" title="Okey, let's go..!" aria-label="Okey, let's go..!"></button>
+    </div>
+  </div>
+
+  <script>
+    // Audio synthesizer for click transition sound
+    function playGoSound() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        const now = ctx.currentTime;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(350, now);
+        osc.frequency.exponentialRampToValueAtTime(1100, now + 0.25);
+
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.28);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } catch (e) {}
+    }
+
+    // Launch the game page
+    function goToNextPage() {
+      playGoSound();
+
+      const container = document.getElementById('frontContainer');
+      const btn = document.getElementById('btnLetsGo');
+
+      btn.classList.add('pressed');
+      container.classList.add('page-exit');
+
+      setTimeout(() => {
+        window.location.href = 'game.html?start=true';
+      }, 280);
+    }
+
+    const btnLetsGo = document.getElementById('btnLetsGo');
+    btnLetsGo.addEventListener('click', goToNextPage);
+
+    // Keyboard support: Space or Enter starts game
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' || e.code === 'Enter') {
+        e.preventDefault();
+        goToNextPage();
+      }
+    });
+
+    // Double-click anywhere to toggle browser fullscreen if desired
+    window.addEventListener('dblclick', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+      }
+    });
+  </script>
+</body>
+</html>

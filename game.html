@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marsupilami Jungle Runner - Palombian Forest Adventure</title>
+  <meta name="description" content="An exciting Marsupilami arcade runner game. Run on the ground, swing on jungle vines, catch blue fish for speed, avoid black fish, and dodge lethal winged flying fish!">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Main Game Container -->
+  <div class="game-wrapper" id="gameWrapper">
+
+    <!-- Speed Vignette Effect (Visual rush when moving fast) -->
+    <div class="speed-vignette" id="speedVignette"></div>
+
+    <!-- HTML5 Canvas -->
+    <canvas id="gameCanvas" width="960" height="540"></canvas>
+
+    <!-- Lane Status Badge -->
+    <div class="lane-indicator" id="hudLaneBadge">🐾 BOTTOM GROUND RUN</div>
+
+    <!-- Heads-Up Display (HUD) -->
+    <div class="hud-container" id="hudContainer">
+      <!-- Left: Distance & Speedometer -->
+      <div class="hud-left">
+        <div class="hud-pill">
+          <span class="hud-label">DISTANCE</span>
+          <span class="hud-value" id="hudDistance">0m</span>
+        </div>
+
+        <div class="hud-pill speed-pill">
+          <span class="hud-label">SPEED</span>
+          <div class="speed-gauge-wrap">
+            <div class="speed-bar-bg">
+              <div class="speed-bar-fill" id="hudSpeedFill"></div>
+            </div>
+            <span class="hud-value" id="hudSpeedVal">20</span>
+            <span style="font-size: 0.7rem; color: #a7f3d0; font-weight: 700;">km/h</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center: Score -->
+      <div class="hud-center">
+        <div class="hud-pill">
+          <span class="hud-label">SCORE</span>
+          <span class="hud-value" id="hudScore" style="color: #f4d03f; font-size: 1.4rem;">0</span>
+        </div>
+      </div>
+
+      <!-- Right: Fish Caught & Sound Controls -->
+      <div class="hud-right">
+        <div class="fish-counters">
+          <div class="fish-tag blue-tag" title="Blue Fish (+Speed)">
+            <img src="assets/sprites/blue_fish.png?v=5" alt="Blue Fish" style="width: 26px; height: auto; vertical-align: middle; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">
+            <span id="hudBlueFish">0</span>
+          </div>
+          <div class="fish-tag black-tag" title="Black Fish (-Speed)">
+            <img src="assets/sprites/black_fish.png?v=5" alt="Black Fish" style="width: 26px; height: auto; vertical-align: middle; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">
+            <span id="hudBlackFish">0</span>
+          </div>
+        </div>
+
+        <a href="index.html" class="hud-btn" id="btnHome" title="Back to Front Page" aria-label="Back to Front Page" style="text-decoration: none;">🏠</a>
+        <button class="hud-btn" id="btnFullscreen" title="Toggle Fullscreen" aria-label="Toggle Fullscreen">⛶</button>
+        <button class="hud-btn" id="btnMute" title="Toggle Sound" aria-label="Toggle Sound">🔊</button>
+        <button class="hud-btn" id="btnPause" title="Pause Game" aria-label="Pause Game">⏸️</button>
+      </div>
+    </div>
+
+    <!-- Touch / Mobile Controls (Visible on touch devices / responsive) -->
+    <div class="mobile-controls" id="mobileControls">
+      <button class="touch-btn" id="btnTouchUp" aria-label="Swing on Vine">
+        <span class="icon">🌿</span>
+        <span>SWING</span>
+      </button>
+      <button class="touch-btn" id="btnTouchDown" aria-label="Run on Ground">
+        <span class="icon">🐾</span>
+        <span>RUN</span>
+      </button>
+    </div>
+
+    <!-- START SCREEN OVERLAY -->
+    <div class="overlay-screen" id="startScreen">
+      <h1 class="game-title">MARSUPILAMI</h1>
+      <p class="game-subtitle">🌴 JUNGLE RUNNER • PALOMBIAN ADVENTURE 🌴</p>
+
+      <!-- Game Rules & Fish Guide -->
+      <div class="guide-container">
+        <!-- Blue Fish Guide -->
+        <div class="guide-card">
+          <div style="height: 54px; display: flex; align-items: center; justify-content: center;">
+            <img src="assets/sprites/blue_fish.png?v=5" alt="Blue Fish" style="height: 48px; width: auto; filter: drop-shadow(0 4px 8px rgba(0, 229, 255, 0.6));">
+          </div>
+          <span class="guide-title">Blue Fish</span>
+          <span class="guide-desc">Speed <strong>Increases</strong>!<br>+100 Bonus Points</span>
+        </div>
+
+        <!-- Black Fish Guide -->
+        <div class="guide-card">
+          <div style="height: 54px; display: flex; align-items: center; justify-content: center;">
+            <img src="assets/sprites/black_fish.png?v=5" alt="Black Fish" style="height: 48px; width: auto; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.7));">
+          </div>
+          <span class="guide-title">Black Fish</span>
+          <span class="guide-desc">Speed <strong>Decreases</strong>!<br>Mud slow-down penalty</span>
+        </div>
+
+        <!-- Winged Fish Hazard Guide -->
+        <div class="guide-card" style="border-color: rgba(255, 71, 87, 0.6);">
+          <div style="height: 54px; display: flex; align-items: center; justify-content: center;">
+            <img src="assets/sprites/winged_fish.png?v=5" alt="Winged Fish" style="height: 52px; width: auto; filter: drop-shadow(0 4px 10px rgba(255, 71, 87, 0.7));">
+          </div>
+          <span class="guide-title" style="color: #ff6b81;">Winged Fish</span>
+          <span class="guide-desc"><strong>Lethal Hazard!</strong><br>• Bottom fish? <strong>Swing top vine!</strong><br>• Top fish? <strong>Run on ground!</strong></span>
+        </div>
+      </div>
+
+      <!-- Controls Hint -->
+      <div class="controls-hint-box">
+        <div><span class="key-badge">W</span> or <span class="key-badge">⬆️</span> or <span class="key-badge">SPACE</span> : Swing Top Vine</div>
+        <div><span class="key-badge">S</span> or <span class="key-badge">⬇️</span> : Run Ground</div>
+      </div>
+
+      <button class="btn-primary" id="btnStart">
+        <span>PLAY NOW</span> ➔
+      </button>
+    </div>
+
+    <!-- GAME OVER SCREEN OVERLAY (Uses authentic 2nd uploaded image) -->
+    <div class="overlay-screen game-over-modal hidden" id="gameOverScreen">
+      <div class="game-over-container" id="gameOverContainer">
+        <!-- The user's authentic Game Over image -->
+        <img src="assets/game_over.jpg?v=2026" alt="GAME OVER - PLAY AGAIN" class="game-over-img">
+
+        <!-- Back to Home Page Button Option on Last Page -->
+        <a href="index.html" class="game-over-home-btn" id="btnGameOverHome" title="Back to Home Page" aria-label="Back to Home Page">
+          <span>🏠</span>
+          <span>HOME</span>
+        </a>
+
+        <!-- Score & High Score badge floating over top-center -->
+        <div class="game-over-stats-pill">
+          <span>SCORE: <strong id="goScore" style="color: #f4d03f;">0</strong></span>
+          <span>•</span>
+          <span>DISTANCE: <strong id="goDistance" style="color: #80d8ff;">0m</strong></span>
+          <span>•</span>
+          <span>BEST: <strong id="goHighScore" style="color: #69f0ae;">0</strong></span>
+          <span style="display:none;" id="goBlue">0</span>
+          <span style="display:none;" id="goBlack">0</span>
+        </div>
+
+        <!-- Interactive Clickable Hotspot Button over the "PLAY AGAIN" Pill in the image -->
+        <button class="play-again-hotspot-btn" id="btnRestart" title="PLAY AGAIN" aria-label="PLAY AGAIN"></button>
+      </div>
+    </div>
+
+    <!-- PAUSE SCREEN OVERLAY -->
+    <div class="overlay-screen hidden" id="pauseScreen">
+      <h2 class="game-title" style="font-size: 2.8rem;">GAME PAUSED</h2>
+      <p class="game-subtitle">Take a breath in the Palombian rainforest!</p>
+      <button class="btn-primary" id="btnResume" style="margin-top: 15px;">
+        <span>RESUME</span> ▶️
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Game Scripts (Loaded in dependency order) -->
+  <script src="js/audio.js?v=9"></script>
+  <script src="js/particleSystem.js?v=9"></script>
+  <script src="js/background.js?v=9"></script>
+  <script src="js/marsupilami.js?v=9"></script>
+  <script src="js/obstacles.js?v=9"></script>
+  <script src="js/game.js?v=9"></script>
+</body>
+</html>
